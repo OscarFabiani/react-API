@@ -6,33 +6,18 @@ import './index.css';
 //URL to JSON data for my github repos
 const url = 'https://api.github.com/users/oscarfabiani/repos';
 
-
-//XHR (XMLHttpRequest) example
-const request = new XMLHttpRequest();
-request.open('GET', url, true);
-request.onload = function() {
-  // begin accessing JSON data here
-  var data2 = JSON.parse(this.response);
-  console.log('XHR:', data2[0].name, data2[0].created_at);
-}
-request.send()
-
-//Fetch example
-fetch(url)
-  .then(result => result.json())
-  .then(result => {
-    console.log('Fetch:', result[0].full_name);
-  })
-  .catch(err => {
-    console.log('error: ', err)
-  })
+//URL to JSON data for 10 random users
+const userURL = "https://randomuser.me/api/?results=10";
 
 
 //A component that displays JSON data as an accordian.
 class Accordian extends React.Component {
   state = {
     data: [],
-    currentIndex: -1
+    users: [],
+    currentIndex: -1,
+    isLoading: false,
+    error: null
   }
   handleClick = (i) => {
     this.setState (prevState => {
@@ -40,6 +25,7 @@ class Accordian extends React.Component {
     })
   }
   componentDidMount() {
+    this.setState({isLoading: true})
     fetch(url)
       .then(response => response.json())
       .then(response => {
@@ -47,9 +33,28 @@ class Accordian extends React.Component {
           data: response
         })
       })
+    fetch(userURL)
+      .then(response => {
+        if (response.ok) {
+          console.log(response);
+          return response.json();
+        } else {
+          return;
+        }
+      })
+      .then(response => {
+        this.setState({
+          users: response.results,
+          isLoading: false
+        })
+      })
+      .catch(error => {
+        console.log(error);
+        this.setState({error})
+      })
   }
   render() {
-    const {data, currentIndex} = this.state;
+    const {data, users, currentIndex, isLoading, error} = this.state;
     const repoRenders = data.map((repo, i) => {
       return (
         <Repo
@@ -61,9 +66,24 @@ class Accordian extends React.Component {
           handleClick={this.handleClick}/>
       )
     })
+    const userRenders = users.map((user, i) => {
+      return (
+        <Repo
+          key={user.phone}
+          index={i + 11}
+          name={user.name.first + ' ' + user.name.last}
+          desc={user.email}
+          currentIndex={currentIndex}
+          handleClick={this.handleClick}/>
+      )
+    })
+    
     return (
+      error ? <span>Something went wrong...{error.message}</span> :
+      isLoading ? <span>Loading...</span> :
       <div>
         {repoRenders}
+        {isLoading ? <li style={{backgroundColor: 'red'}}>Loading...</li> : userRenders}
       </div>
     )
   }
@@ -91,3 +111,28 @@ ReactDOM.render(
   <Accordian />,
   document.getElementById('root')
 );
+
+
+
+//CONTINUE TO REVIEW TUTORIALS AND EXPERIMENT
+
+
+//XHR (XMLHttpRequest) example
+const request = new XMLHttpRequest();
+request.open('GET', url, true);
+request.onload = function() {
+  // begin accessing JSON data here
+  var data2 = JSON.parse(this.response);
+  console.log('XHR:', data2[0].name, data2[0].created_at);
+}
+request.send()
+
+//Fetch example
+fetch(url)
+  .then(result => result.json())
+  .then(result => {
+    console.log('Fetch:', result[0].full_name);
+  })
+  .catch(err => {
+    console.log('error: ', err)
+  })
