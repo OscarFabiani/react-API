@@ -2,65 +2,36 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-class App extends React.Component {
-  state = {
-    data: [],
-  }
 
-  // Code is invoked after the component is mounted/inserted into the DOM tree.
-  componentDidMount() {
-    const url =
-      'https://en.wikipedia.org/w/api.php?action=opensearch&search=Seona+Dancing&format=json&origin=*'
+//URL to JSON data for my github repos
+const url = 'https://api.github.com/users/oscarfabiani/repos';
 
-    fetch(url)
-      .then(result => result.json())
-      .then(result => {
-        this.setState({
-          data: result,
-        })
-      })
-  }
 
-  render() {
-    const { data } = this.state
-
-    const result = data.map((entry, index) => {
-      return <li key={index}>{entry}</li>
-    })
-
-    return <ul>{result}</ul>
-  }
+//XHR (XMLHttpRequest) example
+const request = new XMLHttpRequest();
+request.open('GET', url, true);
+request.onload = function() {
+  // begin accessing JSON data here
+  var data2 = JSON.parse(this.response);
+  console.log('XHR:', data2[0].name, data2[0].created_at);
 }
+request.send()
 
-const qa = [
-  {
-    question: "What is react?",
-    answer:
-      "React is a JavaScript library used to build views which are mainly concentrated on the view part in the MVC model."
-  },
-  {
-    question: "What is JSX ?",
-    answer:
-      "JSX is JavaScript XML which is used inside the react to write the HTML like syntax inside the javascript it’s just a preprocessor. The jsx we write later converts into the JavaScript with the help of babel."
-  },
-  {
-    question: "What is Nodejs  ?",
-    answer:
-      "Nodejs is a backend JavaScript framework built on top of v8 JavaScript engine. By using node js you can be built any kind of backend stuff."
-  },
-  {
-    question: "What is npm ?",
-    answer:
-      "npm is a node package manager which is used to install the libraries created by the other people. By using npm you can install or uninstall packages at any point in time."
-  },
-  {
-    question: "What is react ?",
-    answer: "A JavaScript library for building user interfaces"
-  }
-];
+//Fetch example
+fetch(url)
+  .then(result => result.json())
+  .then(result => {
+    console.log('Fetch:', result[0].full_name);
+  })
+  .catch(err => {
+    console.log('error: ', err)
+  })
 
+
+//A component that displays JSON data as an accordian.
 class Accordian extends React.Component {
   state = {
+    data: [],
     currentIndex: -1
   }
   handleClick = (i) => {
@@ -68,39 +39,48 @@ class Accordian extends React.Component {
       return {currentIndex: prevState.currentIndex === i ? -1 : i}
     })
   }
+  componentDidMount() {
+    fetch(url)
+      .then(response => response.json())
+      .then(response => {
+        this.setState({
+          data: response
+        })
+      })
+  }
   render() {
-    const {currentIndex} = this.state;
-    const qaRenders = qa.map((qa, i) => {
+    const {data, currentIndex} = this.state;
+    const repoRenders = data.map((repo, i) => {
       return (
-        <QaPair
-          key={qa.question}
+        <Repo
+          key={repo.id}
           index={i}
-          question={qa.question}
-          answer={qa.answer}
+          name={repo.name}
+          desc={repo.description}
           currentIndex={currentIndex}
           handleClick={this.handleClick}/>
       )
     })
     return (
       <div>
-        {qaRenders}
+        {repoRenders}
       </div>
     )
   }
 }
 
-class QaPair extends React.Component {
+class Repo extends React.Component {
   handleClick = () => {
     const {index, handleClick} = this.props;
     handleClick(index);
   }
   render() {
-    const {index, question, answer, currentIndex} = this.props;
+    const {index, name, desc, currentIndex} = this.props;
     let current = currentIndex === index;
     return (
       <ul className='holder'>
-        <li className='question'onClick={this.handleClick}>{question}</li>
-        {current && <li className={current ? 'answer open' : 'answer'}>{answer}</li>}
+        <li className='question'onClick={this.handleClick}>{name}</li>
+        {current && <li className={current ? 'answer open' : 'answer'}>{desc}</li>}
       </ul>
     )
   }
