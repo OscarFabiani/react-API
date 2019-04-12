@@ -72,7 +72,7 @@ class Accordian extends React.Component {
           key={user.phone}
           index={i + 11}
           name={user.name.first + ' ' + user.name.last}
-          desc={user.email}
+          desc={<img src={user.picture.thumbnail} alt={user.name.first}></img>}
           currentIndex={currentIndex}
           handleClick={this.handleClick}/>
       )
@@ -113,8 +113,6 @@ ReactDOM.render(
 );
 
 
-
-//CONTINUE TO REVIEW TUTORIALS AND EXPERIMENT
 
 
 //XHR (XMLHttpRequest) example
